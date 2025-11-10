@@ -12,19 +12,19 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            background: #f5f5f5;
             min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         h1 {
@@ -90,18 +90,19 @@
         .add-btn {
             grid-column: 4;
             padding: 12px 25px;
-            background: #667eea;
-            color: white;
-            border: none;
+            background: #f4d03f;
+            color: #333;
+            border: 2px solid #d4b02f;
             border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s;
         }
 
         .add-btn:hover {
-            background: #5568d3;
+            background: #e5c12f;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         .category-selector {
@@ -120,41 +121,42 @@
         }
 
         .category-option:hover {
-            border-color: #667eea;
+            border-color: #f4d03f;
+            background: #fff9e6;
         }
 
         .category-option.selected {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
+            background: #f4d03f;
+            color: #333;
+            border-color: #d4b02f;
         }
 
         .timeline-container {
             position: relative;
-            margin-top: 50px;
-            padding: 50px 0;
+            margin-top: 80px;
+            padding: 200px 0;
+            overflow-x: auto;
         }
 
         .timeline-line {
             position: absolute;
             top: 50%;
-            left: 50px;
-            right: 50px;
-            height: 4px;
-            background: linear-gradient(to right, #667eea, #764ba2);
+            left: 100px;
+            right: 100px;
+            height: 3px;
+            background: #333;
             transform: translateY(-50%);
         }
 
         .timeline-markers {
             position: relative;
-            height: 100px;
-            margin-bottom: 50px;
+            height: 0;
         }
 
         .timeline-marker {
             position: absolute;
-            top: 50%;
-            transform: translate(-50%, -50%);
+            top: 0;
+            transform: translateX(-50%);
             text-align: center;
         }
 
@@ -162,18 +164,20 @@
             font-weight: bold;
             color: #333;
             background: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            margin-bottom: 5px;
+            padding: 3px 8px;
             font-size: 14px;
+            position: relative;
+            top: -10px;
         }
 
         .timeline-marker .dot {
-            width: 12px;
-            height: 12px;
-            background: #764ba2;
+            width: 8px;
+            height: 8px;
+            background: #333;
             border-radius: 50%;
-            margin: 5px auto;
+            margin: 0 auto;
+            position: relative;
+            top: -1px;
         }
 
         .events-container {
@@ -181,93 +185,88 @@
             min-height: 200px;
         }
 
-        .event-item {
+        .event-wrapper {
             position: absolute;
-            width: 250px;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            cursor: move;
-            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .event-connector {
+            position: absolute;
+            width: 2px;
+            background: #333;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .event-connector::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .event-connector.above {
+            bottom: 0;
+        }
+
+        .event-connector.above::before {
+            bottom: -6px;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid #333;
+        }
+
+        .event-connector.below {
+            top: 0;
+        }
+
+        .event-connector.below::before {
+            top: -6px;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 8px solid #333;
+        }
+
+        .event-item {
+            background: #f4d03f;
+            padding: 12px 18px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            text-align: center;
+            border: 2px solid #d4b02f;
+            min-width: 180px;
+            max-width: 220px;
         }
 
         .event-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        }
-
-        .event-item.politisk {
-            background: #fff3cd;
-            border-left: 5px solid #ffc107;
-        }
-
-        .event-item.kulturell {
-            background: #d1ecf1;
-            border-left: 5px solid #17a2b8;
-        }
-
-        .event-item.religiös {
-            background: #f8d7da;
-            border-left: 5px solid #dc3545;
-        }
-
-        .event-item.teknisk {
-            background: #d4edda;
-            border-left: 5px solid #28a745;
-        }
-
-        .event-item.militär {
-            background: #e2d5f5;
-            border-left: 5px solid #6f42c1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
         }
 
         .event-year {
             font-weight: bold;
             color: #333;
             margin-bottom: 5px;
-            font-size: 16px;
+            font-size: 15px;
         }
 
         .event-description {
-            font-size: 14px;
-            color: #555;
+            font-size: 13px;
+            color: #222;
             margin-bottom: 8px;
-            line-height: 1.4;
+            line-height: 1.3;
         }
 
         .event-category {
             display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
             font-weight: bold;
             text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-
-        .event-item.politisk .event-category {
-            background: #ffc107;
-            color: #000;
-        }
-
-        .event-item.kulturell .event-category {
-            background: #17a2b8;
-            color: white;
-        }
-
-        .event-item.religiös .event-category {
-            background: #dc3545;
-            color: white;
-        }
-
-        .event-item.teknisk .event-category {
-            background: #28a745;
-            color: white;
-        }
-
-        .event-item.militär .event-category {
-            background: #6f42c1;
-            color: white;
+            margin-bottom: 6px;
+            background: rgba(0,0,0,0.1);
+            color: #333;
         }
 
         .delete-btn {
@@ -282,14 +281,6 @@
 
         .delete-btn:hover {
             background: #c82333;
-        }
-
-        .era-label {
-            position: absolute;
-            top: -30px;
-            font-weight: bold;
-            color: #764ba2;
-            font-size: 18px;
         }
 
         .clear-all-btn {
@@ -309,15 +300,15 @@
         }
 
         .instructions {
-            background: #e7f3ff;
+            background: #fff9e6;
             padding: 15px;
-            border-radius: 10px;
+            border-radius: 5px;
             margin-bottom: 20px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #f4d03f;
         }
 
         .instructions h3 {
-            color: #667eea;
+            color: #d4b02f;
             margin-bottom: 10px;
         }
 
@@ -407,13 +398,13 @@
         function createTimelineMarkers() {
             const markers = document.getElementById('timelineMarkers');
             const keyYears = [
-                { year: -3000, label: '3000 f.Kr', era: 'Antiken' },
+                { year: -3000, label: '3000 f.Kr' },
                 { year: -2000, label: '2000 f.Kr' },
                 { year: -1000, label: '1000 f.Kr' },
                 { year: 0, label: '0' },
-                { year: 500, label: '500 e.Kr', era: 'Medeltiden' },
+                { year: 500, label: '500 e.Kr' },
                 { year: 1000, label: '1000 e.Kr' },
-                { year: 1400, label: '1400 e.Kr', era: 'Renässansen' },
+                { year: 1400, label: '1400 e.Kr' },
                 { year: 1600, label: '1600 e.Kr' }
             ];
 
@@ -421,9 +412,8 @@
                 const position = ((item.year - START_YEAR) / TOTAL_SPAN) * 100;
                 const marker = document.createElement('div');
                 marker.className = 'timeline-marker';
-                marker.style.left = `calc(50px + ${position}% * (100% - 100px) / 100)`;
+                marker.style.left = `calc(100px + ${position}% * (100% - 200px) / 100)`;
                 marker.innerHTML = `
-                    ${item.era ? `<div class="era-label">${item.era}</div>` : ''}
                     <div class="year">${item.label}</div>
                     <div class="dot"></div>
                 `;
@@ -484,23 +474,50 @@
 
                 // Alternera händelser ovanför och under tidslinjen
                 const isAbove = index % 2 === 0;
-                const verticalPosition = isAbove ? -150 : 50;
+                const connectorHeight = 80;
+                const boxHeight = 120;
 
+                // Skapa wrapper för händelsen
+                const wrapper = document.createElement('div');
+                wrapper.className = 'event-wrapper';
+                wrapper.style.left = `calc(100px + ${position}% * (100% - 200px) / 100)`;
+                wrapper.style.top = '0';
+                wrapper.style.transform = 'translateX(-50%)';
+
+                // Skapa connector (vertikal linje med pil)
+                const connector = document.createElement('div');
+                connector.className = `event-connector ${isAbove ? 'above' : 'below'}`;
+                connector.style.height = `${connectorHeight}px`;
+                if (isAbove) {
+                    connector.style.bottom = '0';
+                } else {
+                    connector.style.top = '0';
+                }
+
+                // Skapa händelserutan
                 const eventDiv = document.createElement('div');
-                eventDiv.className = `event-item ${event.category}`;
-                eventDiv.style.left = `calc(50px + ${position}% * (100% - 100px) / 100 - 125px)`;
-                eventDiv.style.top = `${verticalPosition}px`;
+                eventDiv.className = 'event-item';
+                eventDiv.style.position = 'absolute';
+                eventDiv.style.left = '50%';
+                eventDiv.style.transform = 'translateX(-50%)';
+
+                if (isAbove) {
+                    eventDiv.style.bottom = `${connectorHeight}px`;
+                } else {
+                    eventDiv.style.top = `${connectorHeight}px`;
+                }
 
                 const yearDisplay = event.year < 0 ? `${Math.abs(event.year)} f.Kr` : `${event.year} e.Kr`;
 
                 eventDiv.innerHTML = `
                     <div class="event-category">${event.category}</div>
-                    <div class="event-year">${yearDisplay}</div>
-                    <div class="event-description">${event.description}</div>
+                    <div class="event-description"><strong>${event.description}</strong></div>
                     <button class="delete-btn" onclick="deleteEvent(${event.id})">Ta bort</button>
                 `;
 
-                container.appendChild(eventDiv);
+                wrapper.appendChild(connector);
+                wrapper.appendChild(eventDiv);
+                container.appendChild(wrapper);
             });
         }
 
