@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktiv Tidslinje: Antiken till Renässansen</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 150px 1fr 2fr 120px;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: start;
+        }
+
+        label {
+            font-weight: bold;
+            color: #555;
+            padding-top: 10px;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        textarea,
+        select {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+        }
+
+        .add-btn {
+            grid-column: 4;
+            padding: 12px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .add-btn:hover {
+            background: #5568d3;
+        }
+
+        .category-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .category-option {
+            padding: 8px 15px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .category-option:hover {
+            border-color: #667eea;
+        }
+
+        .category-option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .timeline-container {
+            position: relative;
+            margin-top: 50px;
+            padding: 50px 0;
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 50%;
+            left: 50px;
+            right: 50px;
+            height: 4px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            transform: translateY(-50%);
+        }
+
+        .timeline-markers {
+            position: relative;
+            height: 100px;
+            margin-bottom: 50px;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .timeline-marker .year {
+            font-weight: bold;
+            color: #333;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .timeline-marker .dot {
+            width: 12px;
+            height: 12px;
+            background: #764ba2;
+            border-radius: 50%;
+            margin: 5px auto;
+        }
+
+        .events-container {
+            position: relative;
+            min-height: 200px;
+        }
+
+        .event-item {
+            position: absolute;
+            width: 250px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: move;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .event-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .event-item.politisk {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+        }
+
+        .event-item.kulturell {
+            background: #d1ecf1;
+            border-left: 5px solid #17a2b8;
+        }
+
+        .event-item.religiös {
+            background: #f8d7da;
+            border-left: 5px solid #dc3545;
+        }
+
+        .event-item.teknisk {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+        }
+
+        .event-item.militär {
+            background: #e2d5f5;
+            border-left: 5px solid #6f42c1;
+        }
+
+        .event-year {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .event-description {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .event-category {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .event-item.politisk .event-category {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .event-item.kulturell .event-category {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .event-item.religiös .event-category {
+            background: #dc3545;
+            color: white;
+        }
+
+        .event-item.teknisk .event-category {
+            background: #28a745;
+            color: white;
+        }
+
+        .event-item.militär .event-category {
+            background: #6f42c1;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .era-label {
+            position: absolute;
+            top: -30px;
+            font-weight: bold;
+            color: #764ba2;
+            font-size: 18px;
+        }
+
+        .clear-all-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+            float: right;
+        }
+
+        .clear-all-btn:hover {
+            background: #c82333;
+        }
+
+        .instructions {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            color: #555;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+
+            .add-btn {
+                grid-column: 1;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .event-item {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📜 Interaktiv Tidslinje 📜</h1>
+        <p class="subtitle">Antiken till Renässansen (ca 3000 f.Kr - 1600 e.Kr)</p>
+
+        <div class="instructions">
+            <h3>Instruktioner:</h3>
+            <ul>
+                <li>Lägg till historiska händelser genom att fylla i år, beskrivning och välja kategori</li>
+                <li>Använd negativa årtal för f.Kr (t.ex. -753 för 753 f.Kr)</li>
+                <li>Händelserna placeras automatiskt på tidslinjen baserat på året</li>
+                <li>Klicka på "Ta bort" för att radera en händelse</li>
+            </ul>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="year">År:</label>
+                <input type="number" id="year" placeholder="T.ex. -753 eller 1453" min="-3000" max="1600">
+
+                <label for="description">Beskrivning:</label>
+                <textarea id="description" placeholder="Beskriv händelsen..."></textarea>
+
+                <label>Kategori:</label>
+                <div class="category-selector">
+                    <div class="category-option selected" data-category="politisk">Politisk</div>
+                    <div class="category-option" data-category="kulturell">Kulturell</div>
+                    <div class="category-option" data-category="religiös">Religiös</div>
+                    <div class="category-option" data-category="teknisk">Teknisk</div>
+                    <div class="category-option" data-category="militär">Militär</div>
+                </div>
+
+                <button class="add-btn" onclick="addEvent()">Lägg till</button>
+            </div>
+        </div>
+
+        <button class="clear-all-btn" onclick="clearAllEvents()">Rensa alla händelser</button>
+
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
+            <div class="timeline-markers" id="timelineMarkers"></div>
+            <div class="events-container" id="eventsContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        let events = [];
+        let selectedCategory = 'politisk';
+
+        // Tidsperiodens start och slut
+        const START_YEAR = -3000;
+        const END_YEAR = 1600;
+        const TOTAL_SPAN = END_YEAR - START_YEAR;
+
+        // Skapa tidslinjemarkörerna
+        function createTimelineMarkers() {
+            const markers = document.getElementById('timelineMarkers');
+            const keyYears = [
+                { year: -3000, label: '3000 f.Kr', era: 'Antiken' },
+                { year: -2000, label: '2000 f.Kr' },
+                { year: -1000, label: '1000 f.Kr' },
+                { year: 0, label: '0' },
+                { year: 500, label: '500 e.Kr', era: 'Medeltiden' },
+                { year: 1000, label: '1000 e.Kr' },
+                { year: 1400, label: '1400 e.Kr', era: 'Renässansen' },
+                { year: 1600, label: '1600 e.Kr' }
+            ];
+
+            keyYears.forEach(item => {
+                const position = ((item.year - START_YEAR) / TOTAL_SPAN) * 100;
+                const marker = document.createElement('div');
+                marker.className = 'timeline-marker';
+                marker.style.left = `calc(50px + ${position}% * (100% - 100px) / 100)`;
+                marker.innerHTML = `
+                    ${item.era ? `<div class="era-label">${item.era}</div>` : ''}
+                    <div class="year">${item.label}</div>
+                    <div class="dot"></div>
+                `;
+                markers.appendChild(marker);
+            });
+        }
+
+        // Kategori-väljare
+        document.querySelectorAll('.category-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.category-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedCategory = this.dataset.category;
+            });
+        });
+
+        // Lägg till händelse
+        function addEvent() {
+            const year = parseInt(document.getElementById('year').value);
+            const description = document.getElementById('description').value.trim();
+
+            if (isNaN(year) || year < START_YEAR || year > END_YEAR) {
+                alert(`Ange ett år mellan ${START_YEAR} och ${END_YEAR}`);
+                return;
+            }
+
+            if (!description) {
+                alert('Ange en beskrivning av händelsen');
+                return;
+            }
+
+            const event = {
+                id: Date.now(),
+                year: year,
+                description: description,
+                category: selectedCategory
+            };
+
+            events.push(event);
+            displayEvents();
+
+            // Rensa formuläret
+            document.getElementById('year').value = '';
+            document.getElementById('description').value = '';
+        }
+
+        // Visa alla händelser
+        function displayEvents() {
+            const container = document.getElementById('eventsContainer');
+            container.innerHTML = '';
+
+            // Sortera händelser efter år
+            events.sort((a, b) => a.year - b.year);
+
+            // Räkna ut placering för varje händelse
+            events.forEach((event, index) => {
+                const position = ((event.year - START_YEAR) / TOTAL_SPAN) * 100;
+
+                // Alternera händelser ovanför och under tidslinjen
+                const isAbove = index % 2 === 0;
+                const verticalPosition = isAbove ? -150 : 50;
+
+                const eventDiv = document.createElement('div');
+                eventDiv.className = `event-item ${event.category}`;
+                eventDiv.style.left = `calc(50px + ${position}% * (100% - 100px) / 100 - 125px)`;
+                eventDiv.style.top = `${verticalPosition}px`;
+
+                const yearDisplay = event.year < 0 ? `${Math.abs(event.year)} f.Kr` : `${event.year} e.Kr`;
+
+                eventDiv.innerHTML = `
+                    <div class="event-category">${event.category}</div>
+                    <div class="event-year">${yearDisplay}</div>
+                    <div class="event-description">${event.description}</div>
+                    <button class="delete-btn" onclick="deleteEvent(${event.id})">Ta bort</button>
+                `;
+
+                container.appendChild(eventDiv);
+            });
+        }
+
+        // Ta bort händelse
+        function deleteEvent(id) {
+            events = events.filter(event => event.id !== id);
+            displayEvents();
+        }
+
+        // Rensa alla händelser
+        function clearAllEvents() {
+            if (confirm('Är du säker på att du vill ta bort alla händelser?')) {
+                events = [];
+                displayEvents();
+            }
+        }
+
+        // Enter-tangenten lägger till händelse
+        document.getElementById('description').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                addEvent();
+            }
+        });
+
+        // Initiera tidslinjen
+        createTimelineMarkers();
+    </script>
+</body>
+</html>
