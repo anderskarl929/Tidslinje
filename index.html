@@ -150,14 +150,16 @@
         }
 
         .timeline-markers {
-            position: relative;
+            position: absolute;
+            top: 50%;
+            left: 100px;
+            right: 100px;
             height: 0;
         }
 
         .timeline-marker {
             position: absolute;
             top: 0;
-            transform: translateX(-50%);
             text-align: center;
         }
 
@@ -176,12 +178,16 @@
         }
 
         .events-container {
-            position: relative;
+            position: absolute;
+            top: 50%;
+            left: 100px;
+            right: 100px;
             min-height: 200px;
         }
 
         .event-wrapper {
             position: absolute;
+            top: 0;
         }
 
         .event-connector {
@@ -392,7 +398,8 @@
                 const position = (item.year - START_YEAR) / TOTAL_SPAN;
                 const marker = document.createElement('div');
                 marker.className = 'timeline-marker';
-                marker.style.left = `calc(100px + ${position} * (100% - 200px))`;
+                marker.style.left = `${position * 100}%`;
+                marker.style.transform = 'translateX(-50%)';
                 marker.innerHTML = `
                     <div class="year">${item.label}</div>
                     <div class="dot"></div>
@@ -459,8 +466,7 @@
                 // Skapa wrapper för händelsen
                 const wrapper = document.createElement('div');
                 wrapper.className = 'event-wrapper';
-                wrapper.style.left = `calc(100px + ${position} * (100% - 200px))`;
-                wrapper.style.top = '0';
+                wrapper.style.left = `${position * 100}%`;
                 wrapper.style.transform = 'translateX(-50%)';
 
                 // Skapa connector (pil)
