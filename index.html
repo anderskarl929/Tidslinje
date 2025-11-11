@@ -389,10 +389,10 @@
             ];
 
             keyYears.forEach(item => {
-                const position = ((item.year - START_YEAR) / TOTAL_SPAN) * 100;
+                const position = (item.year - START_YEAR) / TOTAL_SPAN;
                 const marker = document.createElement('div');
                 marker.className = 'timeline-marker';
-                marker.style.left = `calc(100px + ${position}% * (100% - 200px) / 100)`;
+                marker.style.left = `calc(100px + ${position} * (100% - 200px))`;
                 marker.innerHTML = `
                     <div class="year">${item.label}</div>
                     <div class="dot"></div>
@@ -450,7 +450,7 @@
 
             // Räkna ut placering för varje händelse
             events.forEach((event, index) => {
-                const position = ((event.year - START_YEAR) / TOTAL_SPAN) * 100;
+                const position = (event.year - START_YEAR) / TOTAL_SPAN;
 
                 // Alternera händelser ovanför och under tidslinjen
                 const isAbove = index % 2 === 0;
@@ -459,7 +459,7 @@
                 // Skapa wrapper för händelsen
                 const wrapper = document.createElement('div');
                 wrapper.className = 'event-wrapper';
-                wrapper.style.left = `calc(100px + ${position}% * (100% - 200px) / 100)`;
+                wrapper.style.left = `calc(100px + ${position} * (100% - 200px))`;
                 wrapper.style.top = '0';
                 wrapper.style.transform = 'translateX(-50%)';
 
