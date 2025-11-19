@@ -372,7 +372,8 @@
             <ul>
                 <li>Lägg till historiska händelser genom att fylla i år (500-1500), beskrivning och välja kategori</li>
                 <li>Händelserna placeras automatiskt på tidslinjen baserat på året</li>
-                <li>Klicka på "Ta bort" för att radera en händelse</li>
+                <li>Använd <strong>+/−</strong> för att zooma in/ut, <strong>←/→</strong> för att panorera (eller tangentbordet)</li>
+                <li>Klicka på "Ta bort" för att radera en händelse, "Återställ" för att återgå till full vy</li>
             </ul>
         </div>
 
@@ -400,9 +401,11 @@
         <button class="clear-all-btn" onclick="clearAllEvents()">Rensa alla händelser</button>
 
         <div class="zoom-controls">
+            <button class="zoom-btn" onclick="panLeft()">←</button>
             <button class="zoom-btn" onclick="zoomOut()">−</button>
             <div class="zoom-info" id="zoomInfo">Visar: 500 - 1500</div>
             <button class="zoom-btn" onclick="zoomIn()">+</button>
+            <button class="zoom-btn" onclick="panRight()">→</button>
             <button class="zoom-btn" onclick="resetZoom()">Återställ</button>
         </div>
 
@@ -621,11 +624,66 @@
             updateTimeline();
         }
 
+        function panLeft() {
+            const span = getCurrentSpan();
+            const panAmount = Math.round(span * 0.25); // Panorera 25% av synligt område
+
+            if (currentStartYear <= ORIGINAL_START_YEAR) return; // Redan vid vänster kant
+
+            currentStartYear = Math.max(ORIGINAL_START_YEAR, currentStartYear - panAmount);
+            currentEndYear = currentStartYear + span;
+
+            updateTimeline();
+        }
+
+        function panRight() {
+            const span = getCurrentSpan();
+            const panAmount = Math.round(span * 0.25); // Panorera 25% av synligt område
+
+            if (currentEndYear >= ORIGINAL_END_YEAR) return; // Redan vid höger kant
+
+            currentEndYear = Math.min(ORIGINAL_END_YEAR, currentEndYear + panAmount);
+            currentStartYear = currentEndYear - span;
+
+            updateTimeline();
+        }
+
         function updateTimeline() {
             createTimelineMarkers();
             displayEvents();
             document.getElementById('zoomInfo').textContent = `Visar: ${currentStartYear} - ${currentEndYear}`;
         }
+
+        // Tangentbordsnavigering
+        document.addEventListener('keydown', function(e) {
+            // Endast om inte i ett input-fält
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            switch(e.key) {
+                case 'ArrowLeft':
+                    panLeft();
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    panRight();
+                    e.preventDefault();
+                    break;
+                case '+':
+                case '=':
+                    zoomIn();
+                    e.preventDefault();
+                    break;
+                case '-':
+                case '_':
+                    zoomOut();
+                    e.preventDefault();
+                    break;
+                case '0':
+                    resetZoom();
+                    e.preventDefault();
+                    break;
+            }
+        });
 
         // Initiera tidslinjen
         createTimelineMarkers();
