@@ -221,6 +221,18 @@
             border: 2px solid #333;
             min-width: 180px;
             max-width: 220px;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .event-item:active {
+            cursor: grabbing;
+        }
+
+        .event-item.dragging {
+            opacity: 0.7;
+            cursor: grabbing;
+            z-index: 1000;
         }
 
         .event-item:hover {
@@ -452,7 +464,9 @@
                 <li>Lägg till historiska händelser från 10000 f.Kr till 2025</li>
                 <li>Använd negativa årtal för f.Kr (t.ex. -3000 för 3000 f.Kr)</li>
                 <li>Händelserna placeras automatiskt på tidslinjen baserat på året</li>
+                <li><strong>Dra händelserutor</strong> längs tidslinjen för att ändra deras år</li>
                 <li>Använd <strong>+/−</strong> för att zooma in/ut, <strong>←/→</strong> för att panorera (eller tangentbordet)</li>
+                <li>Klicka på epokknapparna för att snabbt zooma till en specifik tidsperiod</li>
                 <li>Klicka på "Ta bort" för att radera en händelse, "Återställ" för att återgå till full vy</li>
             </ul>
         </div>
@@ -685,6 +699,7 @@
                 eventDiv.style.position = 'absolute';
                 eventDiv.style.left = '50%';
                 eventDiv.style.transform = 'translateX(-50%)';
+                eventDiv.dataset.eventId = event.id;
 
                 if (isAbove) {
                     eventDiv.style.bottom = `${connectorHeight + 20}px`;
@@ -697,6 +712,9 @@
                     <div class="event-description"><strong>${event.description}</strong></div>
                     <button class="delete-btn" onclick="deleteEvent(${event.id})">Ta bort</button>
                 `;
+
+                // Lägg till drag functionality
+                setupDragging(wrapper, eventDiv, event.id);
 
                 wrapper.appendChild(connector);
                 wrapper.appendChild(eventDiv);
@@ -716,6 +734,74 @@
                 events = [];
                 displayEvents();
             }
+        }
+
+        // Drag-and-drop funktionalitet
+        function setupDragging(wrapper, eventDiv, eventId) {
+            let isDragging = false;
+            let startX = 0;
+            let currentX = 0;
+
+            eventDiv.addEventListener('mousedown', function(e) {
+                // Förhindra drag om man klickar på delete-knappen
+                if (e.target.classList.contains('delete-btn')) {
+                    return;
+                }
+
+                isDragging = true;
+                startX = e.clientX;
+                eventDiv.classList.add('dragging');
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+
+                currentX = e.clientX;
+                const deltaX = currentX - startX;
+
+                // Flytta wrapper
+                const timelineContainer = document.querySelector('.events-container');
+                const containerRect = timelineContainer.getBoundingClientRect();
+                const currentLeft = wrapper.offsetLeft;
+                const newLeft = currentLeft + deltaX;
+
+                // Begränsa till tidslinjen
+                const minLeft = 0;
+                const maxLeft = containerRect.width;
+
+                if (newLeft >= minLeft && newLeft <= maxLeft) {
+                    wrapper.style.left = `${(newLeft / containerRect.width) * 100}%`;
+                    startX = currentX;
+                }
+            });
+
+            document.addEventListener('mouseup', function(e) {
+                if (!isDragging) return;
+
+                isDragging = false;
+                eventDiv.classList.remove('dragging');
+
+                // Beräkna nytt år baserat på position
+                const timelineContainer = document.querySelector('.events-container');
+                const containerRect = timelineContainer.getBoundingClientRect();
+                const wrapperRect = wrapper.getBoundingClientRect();
+                const relativeX = wrapperRect.left - containerRect.left + (wrapperRect.width / 2);
+                const position = relativeX / containerRect.width;
+
+                // Konvertera position till år
+                const newYear = Math.round(currentStartYear + (position * getCurrentSpan()));
+
+                // Begränsa till giltigt intervall
+                const clampedYear = Math.max(ORIGINAL_START_YEAR, Math.min(ORIGINAL_END_YEAR, newYear));
+
+                // Uppdatera händelsens år
+                const event = events.find(e => e.id === eventId);
+                if (event) {
+                    event.year = clampedYear;
+                    displayEvents(); // Rita om tidslinjen
+                }
+            });
         }
 
         // Enter-tangenten lägger till händelse
