@@ -707,8 +707,11 @@
                     eventDiv.style.top = `${connectorHeight + 20}px`;
                 }
 
+                const yearDisplay = formatYear(event.year);
+
                 eventDiv.innerHTML = `
                     <div class="event-category">${event.category}</div>
+                    <div class="event-year">${yearDisplay}</div>
                     <div class="event-description"><strong>${event.description}</strong></div>
                     <button class="delete-btn" onclick="deleteEvent(${event.id})">Ta bort</button>
                 `;
