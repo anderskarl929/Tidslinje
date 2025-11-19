@@ -321,6 +321,85 @@
             text-align: center;
         }
 
+        .epoch-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .epoch-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .epoch-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .epoch-markers {
+            position: absolute;
+            top: 50%;
+            left: 100px;
+            right: 100px;
+            height: 40px;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .epoch-marker {
+            position: absolute;
+            height: 100%;
+            border-left: 2px dashed rgba(0,0,0,0.3);
+            border-right: 2px dashed rgba(0,0,0,0.3);
+            opacity: 0.3;
+        }
+
+        .epoch-marker.forhistorien {
+            background: rgba(139, 69, 19, 0.2);
+        }
+
+        .epoch-marker.forntiden {
+            background: rgba(218, 165, 32, 0.2);
+        }
+
+        .epoch-marker.antiken {
+            background: rgba(70, 130, 180, 0.2);
+        }
+
+        .epoch-marker.medeltiden {
+            background: rgba(147, 51, 234, 0.2);
+        }
+
+        .epoch-marker.tidigmodern {
+            background: rgba(220, 38, 38, 0.2);
+        }
+
+        .epoch-label {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            font-size: 13px;
+            color: #333;
+            background: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
         .instructions {
             background: #E8F5E0;
             padding: 15px;
@@ -401,6 +480,14 @@
 
         <button class="clear-all-btn" onclick="clearAllEvents()">Rensa alla händelser</button>
 
+        <div class="epoch-buttons">
+            <button class="epoch-btn" onclick="zoomToEpoch(-10000, -3000)">Förhistorien (10000-3000 f.Kr)</button>
+            <button class="epoch-btn" onclick="zoomToEpoch(-3000, -800)">Forntiden (3000-800 f.Kr)</button>
+            <button class="epoch-btn" onclick="zoomToEpoch(-800, 476)">Antiken (800 f.Kr-476)</button>
+            <button class="epoch-btn" onclick="zoomToEpoch(476, 1500)">Medeltiden (476-1500)</button>
+            <button class="epoch-btn" onclick="zoomToEpoch(1500, 1700)">Tidigmodern tid (1500-1700)</button>
+        </div>
+
         <div class="zoom-controls">
             <button class="zoom-btn" onclick="panLeft()">←</button>
             <button class="zoom-btn" onclick="zoomOut()">−</button>
@@ -412,6 +499,7 @@
 
         <div class="timeline-container">
             <div class="timeline-line"></div>
+            <div class="epoch-markers" id="epochMarkers"></div>
             <div class="timeline-markers" id="timelineMarkers"></div>
             <div class="events-container" id="eventsContainer"></div>
         </div>
@@ -429,6 +517,15 @@
         let currentStartYear = -10000;
         let currentEndYear = 2025;
 
+        // Epoker
+        const EPOCHS = [
+            { name: 'Förhistorien', start: -10000, end: -3000, class: 'forhistorien' },
+            { name: 'Forntiden', start: -3000, end: -800, class: 'forntiden' },
+            { name: 'Antiken', start: -800, end: 476, class: 'antiken' },
+            { name: 'Medeltiden', start: 476, end: 1500, class: 'medeltiden' },
+            { name: 'Tidigmodern tid', start: 1500, end: 1700, class: 'tidigmodern' }
+        ];
+
         function getCurrentSpan() {
             return currentEndYear - currentStartYear;
         }
@@ -439,6 +536,43 @@
             } else {
                 return `${year}`;
             }
+        }
+
+        // Skapa epokmarkeringar
+        function createEpochMarkers() {
+            const container = document.getElementById('epochMarkers');
+            container.innerHTML = '';
+
+            const span = getCurrentSpan();
+
+            EPOCHS.forEach(epoch => {
+                // Kontrollera om epoket är synligt i nuvarande vy
+                if (epoch.end < currentStartYear || epoch.start > currentEndYear) {
+                    return; // Hoppa över epoker som inte syns
+                }
+
+                // Beräkna synlig del av epoket
+                const visibleStart = Math.max(epoch.start, currentStartYear);
+                const visibleEnd = Math.min(epoch.end, currentEndYear);
+
+                const leftPosition = (visibleStart - currentStartYear) / span;
+                const width = (visibleEnd - visibleStart) / span;
+
+                const marker = document.createElement('div');
+                marker.className = `epoch-marker ${epoch.class}`;
+                marker.style.left = `${leftPosition * 100}%`;
+                marker.style.width = `${width * 100}%`;
+
+                // Lägg till epoketikett om epoket är stort nog och synligt
+                if (width > 0.1) { // Visa bara om epoket tar upp minst 10% av vyn
+                    const label = document.createElement('div');
+                    label.className = 'epoch-label';
+                    label.textContent = epoch.name;
+                    marker.appendChild(label);
+                }
+
+                container.appendChild(marker);
+            });
         }
 
         // Skapa tidslinjemarkörerna
@@ -660,7 +794,14 @@
             updateTimeline();
         }
 
+        function zoomToEpoch(startYear, endYear) {
+            currentStartYear = startYear;
+            currentEndYear = endYear;
+            updateTimeline();
+        }
+
         function updateTimeline() {
+            createEpochMarkers();
             createTimelineMarkers();
             displayEvents();
             document.getElementById('zoomInfo').textContent = `Visar: ${formatYear(currentStartYear)} - ${formatYear(currentEndYear)}`;
@@ -698,6 +839,7 @@
         });
 
         // Initiera tidslinjen
+        createEpochMarkers();
         createTimelineMarkers();
     </script>
 </body>
