@@ -283,6 +283,44 @@
             background: #c82333;
         }
 
+        .zoom-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .zoom-btn {
+            background: #A8D08D;
+            color: #333;
+            border: 2px solid #8BBF6F;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .zoom-btn:hover {
+            background: #8BBF6F;
+        }
+
+        .zoom-btn:disabled {
+            background: #ddd;
+            border-color: #ccc;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .zoom-info {
+            font-size: 14px;
+            color: #666;
+            min-width: 150px;
+            text-align: center;
+        }
+
         .instructions {
             background: #E8F5E0;
             padding: 15px;
@@ -361,6 +399,13 @@
 
         <button class="clear-all-btn" onclick="clearAllEvents()">Rensa alla händelser</button>
 
+        <div class="zoom-controls">
+            <button class="zoom-btn" onclick="zoomOut()">−</button>
+            <div class="zoom-info" id="zoomInfo">Visar: 500 - 1500</div>
+            <button class="zoom-btn" onclick="zoomIn()">+</button>
+            <button class="zoom-btn" onclick="resetZoom()">Återställ</button>
+        </div>
+
         <div class="timeline-container">
             <div class="timeline-line"></div>
             <div class="timeline-markers" id="timelineMarkers"></div>
@@ -372,30 +417,37 @@
         let events = [];
         let selectedCategory = 'politisk';
 
-        // Tidsperiodens start och slut
-        const START_YEAR = 500;
-        const END_YEAR = 1500;
-        const TOTAL_SPAN = END_YEAR - START_YEAR;
+        // Tidsperiodens start och slut (original)
+        const ORIGINAL_START_YEAR = 500;
+        const ORIGINAL_END_YEAR = 1500;
+
+        // Aktuella synliga år (kan ändras med zoom)
+        let currentStartYear = 500;
+        let currentEndYear = 1500;
+
+        function getCurrentSpan() {
+            return currentEndYear - currentStartYear;
+        }
 
         // Skapa tidslinjemarkörerna
         function createTimelineMarkers() {
             const markers = document.getElementById('timelineMarkers');
-            const keyYears = [
-                { year: 500, label: '500' },
-                { year: 600, label: '600' },
-                { year: 700, label: '700' },
-                { year: 800, label: '800' },
-                { year: 900, label: '900' },
-                { year: 1000, label: '1000' },
-                { year: 1100, label: '1100' },
-                { year: 1200, label: '1200' },
-                { year: 1300, label: '1300' },
-                { year: 1400, label: '1400' },
-                { year: 1500, label: '1500' }
-            ];
+            markers.innerHTML = '';
+
+            const span = getCurrentSpan();
+
+            // Beräkna lämpligt intervall mellan markers baserat på zoom
+            let interval = 100;
+            if (span <= 200) interval = 20;
+            else if (span <= 500) interval = 50;
+
+            const keyYears = [];
+            for (let year = Math.ceil(currentStartYear / interval) * interval; year <= currentEndYear; year += interval) {
+                keyYears.push({ year: year, label: year.toString() });
+            }
 
             keyYears.forEach(item => {
-                const position = (item.year - START_YEAR) / TOTAL_SPAN;
+                const position = (item.year - currentStartYear) / span;
                 const marker = document.createElement('div');
                 marker.className = 'timeline-marker';
                 marker.style.left = `${position * 100}%`;
@@ -457,7 +509,12 @@
 
             // Räkna ut placering för varje händelse
             events.forEach((event, index) => {
-                const position = (event.year - START_YEAR) / TOTAL_SPAN;
+                // Visa endast händelser inom synligt område
+                if (event.year < currentStartYear || event.year > currentEndYear) {
+                    return;
+                }
+
+                const position = (event.year - currentStartYear) / getCurrentSpan();
 
                 // Alternera händelser ovanför och under tidslinjen
                 const isAbove = index % 2 === 0;
@@ -519,6 +576,56 @@
                 addEvent();
             }
         });
+
+        // Zoom-funktioner
+        function zoomIn() {
+            const span = getCurrentSpan();
+            if (span <= 100) return; // Minsta zoom
+
+            const center = (currentStartYear + currentEndYear) / 2;
+            const newSpan = span / 2;
+
+            currentStartYear = Math.max(ORIGINAL_START_YEAR, Math.round(center - newSpan / 2));
+            currentEndYear = Math.min(ORIGINAL_END_YEAR, Math.round(center + newSpan / 2));
+
+            updateTimeline();
+        }
+
+        function zoomOut() {
+            const span = getCurrentSpan();
+            if (span >= (ORIGINAL_END_YEAR - ORIGINAL_START_YEAR)) {
+                resetZoom();
+                return;
+            }
+
+            const center = (currentStartYear + currentEndYear) / 2;
+            const newSpan = Math.min(span * 2, ORIGINAL_END_YEAR - ORIGINAL_START_YEAR);
+
+            currentStartYear = Math.max(ORIGINAL_START_YEAR, Math.round(center - newSpan / 2));
+            currentEndYear = Math.min(ORIGINAL_END_YEAR, Math.round(center + newSpan / 2));
+
+            // Justera om vi är vid kanterna
+            if (currentStartYear === ORIGINAL_START_YEAR) {
+                currentEndYear = currentStartYear + newSpan;
+            }
+            if (currentEndYear === ORIGINAL_END_YEAR) {
+                currentStartYear = currentEndYear - newSpan;
+            }
+
+            updateTimeline();
+        }
+
+        function resetZoom() {
+            currentStartYear = ORIGINAL_START_YEAR;
+            currentEndYear = ORIGINAL_END_YEAR;
+            updateTimeline();
+        }
+
+        function updateTimeline() {
+            createTimelineMarkers();
+            displayEvents();
+            document.getElementById('zoomInfo').textContent = `Visar: ${currentStartYear} - ${currentEndYear}`;
+        }
 
         // Initiera tidslinjen
         createTimelineMarkers();
