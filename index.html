@@ -51,10 +51,14 @@
 
         .input-group {
             display: grid;
-            grid-template-columns: 150px 1fr 2fr 120px;
+            grid-template-columns: 150px 1fr;
             gap: 15px;
             margin-bottom: 15px;
             align-items: start;
+        }
+
+        .input-row {
+            display: contents;
         }
 
         label {
@@ -88,7 +92,7 @@
         }
 
         .add-btn {
-            grid-column: 4;
+            grid-column: 1 / -1;
             padding: 12px 25px;
             background: #A8D08D;
             color: #333;
@@ -98,6 +102,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
+            margin-top: 10px;
         }
 
         .add-btn:hover {
@@ -244,6 +249,14 @@
             color: #333;
             margin-bottom: 5px;
             font-size: 15px;
+        }
+
+        .event-image {
+            width: 100%;
+            max-height: 120px;
+            object-fit: cover;
+            margin-bottom: 8px;
+            border-radius: 3px;
         }
 
         .event-description {
@@ -417,8 +430,8 @@
                 grid-template-columns: 1fr;
             }
 
-            .add-btn {
-                grid-column: 1;
+            label {
+                padding-top: 0;
             }
 
             h1 {
@@ -443,6 +456,9 @@
 
                 <label for="description">Beskrivning:</label>
                 <textarea id="description" placeholder="Beskriv händelsen..."></textarea>
+
+                <label for="imageUrl">Bild-URL (valfritt):</label>
+                <input type="text" id="imageUrl" placeholder="https://example.com/bild.jpg">
 
                 <label>Kategori:</label>
                 <div class="category-selector">
@@ -601,6 +617,7 @@
         function addEvent() {
             const year = parseInt(document.getElementById('year').value);
             const description = document.getElementById('description').value.trim();
+            const imageUrl = document.getElementById('imageUrl').value.trim();
 
             if (isNaN(year) || year < ORIGINAL_START_YEAR || year > ORIGINAL_END_YEAR) {
                 alert(`Ange ett år mellan ${ORIGINAL_START_YEAR} och ${ORIGINAL_END_YEAR}`);
@@ -616,7 +633,8 @@
                 id: Date.now(),
                 year: year,
                 description: description,
-                category: selectedCategory
+                category: selectedCategory,
+                imageUrl: imageUrl || null
             };
 
             events.push(event);
@@ -625,6 +643,7 @@
             // Rensa formuläret
             document.getElementById('year').value = '';
             document.getElementById('description').value = '';
+            document.getElementById('imageUrl').value = '';
         }
 
         // Visa alla händelser
@@ -673,10 +692,12 @@
                 }
 
                 const yearDisplay = formatYear(event.year);
+                const imageHtml = event.imageUrl ? `<img src="${event.imageUrl}" alt="${event.description}" class="event-image" onerror="this.style.display='none'">` : '';
 
                 eventDiv.innerHTML = `
                     <div class="event-category">${event.category}</div>
                     <div class="event-year">${yearDisplay}</div>
+                    ${imageHtml}
                     <div class="event-description"><strong>${event.description}</strong></div>
                     <button class="delete-btn" onclick="deleteEvent(${event.id})">Ta bort</button>
                 `;
